@@ -133,7 +133,7 @@ begin
         
         for i in 0 to FFT_SIZE-1 loop
             -- Generate real sine wave input with full 24-bit precision
-            real_part := integer(15000.0 * sin(2 * MATH_PI * real(i) / real(FFT_SIZE))); -- Max 24-bit signed value (2^23-1)
+            real_part := integer(8388607.0 * sin(2.0 * MATH_PI * real(i) / real(FFT_SIZE))); -- Max 24-bit signed value (2^23-1)
             
             -- Format the data: real part in bits 23-0, imaginary part in bits 47-24
             -- Using full 24-bit precision for the real component
