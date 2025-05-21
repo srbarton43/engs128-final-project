@@ -4,7 +4,7 @@
 --  ENGS 128 Spring 2025
 --	Author: Samuel Barton
 ----------------------------------------------------------------------------
---	Description: FIFO buffer for FFT interface
+--	Description: chunking controller for FFT interface input
 ----------------------------------------------------------------------------
 -- Library Declarations
 library IEEE;
@@ -13,7 +13,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 ----------------------------------------------------------------------------
 -- Entity definition
-entity axis_fft_controller is
+entity axis_fft_chunking_interface is
     Generic (
         FIFO_DEPTH : integer := 1024;
         AXIS_DATA_WIDTH : integer := 32;
@@ -38,11 +38,11 @@ entity axis_fft_controller is
 		m00_axis_tstrb    : out std_logic_vector((FFT_DATA_WIDTH/8)-1 downto 0);
 		m00_axis_tlast    : out std_logic;
 		m00_axis_tready   : in std_logic);
-end axis_fft_controller;
+end axis_fft_chunking_interface;
 
 ----------------------------------------------------------------------------
 -- Architecture Definition
-architecture Behavioral of axis_fft_controller is
+architecture Behavioral of axis_fft_chunking_interface is
 ----------------------------------------------------------------------------
 -- Signals
 ----------------------------------------------------------------------------

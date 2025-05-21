@@ -4,7 +4,7 @@
 --  ENGS 128 Spring 2025
 --	Author: Samuel Barton
 ----------------------------------------------------------------------------
---	Description: Bins RAM from FFT
+--	Description: interface for Bins RAM from FFT
 ----------------------------------------------------------------------------
 -- Library Declarations
 library IEEE;
@@ -14,7 +14,7 @@ use ieee.math_real.all;
 
 ----------------------------------------------------------------------------
 -- Entity definition
-entity axis_fft_bins is
+entity axis_fft_bins_interface is
     Generic (
         DATA_WIDTH : integer := 24;
         FFT_DEPTH : integer := 256);
@@ -30,11 +30,11 @@ entity axis_fft_bins is
 
 		ram_filled_o        : out std_logic);
 
-end axis_fft_bins;
+end axis_fft_bins_interface;
 
 ----------------------------------------------------------------------------
 -- Architecture Definition
-architecture Behavioral of axis_fft_bins is
+architecture Behavioral of axis_fft_bins_interface is
 ----------------------------------------------------------------------------
 -- Signals
 ----------------------------------------------------------------------------
