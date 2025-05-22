@@ -17,18 +17,20 @@ use ieee.math_real.all;
 entity axis_fft_bins_interface is
     Generic (
         DATA_WIDTH : integer := 24;
-        FFT_DEPTH : integer := 256);
+        FFT_DEPTH : integer := 64);
     Port (
     -- Ports of Axi Responder Bus Interface S00_AXIS
 		s00_axis_aclk     : in std_logic;
 		s00_axis_tdata	  : in std_logic_vector(DATA_WIDTH*2-1 downto 0);
 		s00_axis_tlast    : in std_logic;
+		s00_axis_tuser    : in unsigned(5 downto 0);
 		s00_axis_tvalid   : in std_logic;
 
-		ram_index_i       : in unsigned(8-1 downto 0);
-		bin_value_o       : out std_logic_vector(DATA_WIDTH-1 downto 0);
+		vsync_i           : in std_logic;
 
-		ram_filled_o        : out std_logic);
+		ram_read_index_i  : in unsigned(5 downto 0);
+		rgb_value_o       : out std_logic_vector(DATA_WIDTH-1 downto 0)
+		);
 
 end axis_fft_bins_interface;
 
@@ -38,9 +40,82 @@ architecture Behavioral of axis_fft_bins_interface is
 ----------------------------------------------------------------------------
 -- Signals
 ----------------------------------------------------------------------------
+-- First, declare the type
+type rgb_lut_array is array (0 to 63) of std_logic_vector(23 downto 0);
+
+-- Now declare the constant
+constant RGB_LUT: rgb_lut_array := (
+    x"00007f",
+    x"020381",
+    x"040683",
+    x"070985",
+    x"090c87",
+    x"0c1089",
+    x"0e138b",
+    x"11168d",
+    x"13198f",
+    x"151d91",
+    x"182093",
+    x"1a2395",
+    x"1d2697",
+    x"1f2a99",
+    x"222d9b",
+    x"24309d",
+    x"26339f",
+    x"2937a1",
+    x"2b3aa3",
+    x"2e3da5",
+    x"3040a7",
+    x"3244aa",
+    x"3547ac",
+    x"374aae",
+    x"3a4db0",
+    x"3c50b2",
+    x"3f54b4",
+    x"4157b6",
+    x"445ab8",
+    x"465dba",
+    x"4861bc",
+    x"4b64be",
+    x"4d67c0",
+    x"506ac2",
+    x"526ec4",
+    x"5571c6",
+    x"5774c8",
+    x"5977ca",
+    x"5c7bcc",
+    x"5e7ece",
+    x"6181d0",
+    x"6384d2",
+    x"6588d4",
+    x"688bd6",
+    x"6a8ed8",
+    x"6d91da",
+    x"6f94dc",
+    x"7298de",
+    x"749be0",
+    x"769ee2",
+    x"79a1e4",
+    x"7ba5e6",
+    x"7ea8e8",
+    x"80abea",
+    x"83aeec",
+    x"85b2ee",
+    x"88b5f0",
+    x"8ab8f2",
+    x"8cbbf4",
+    x"8fbff6",
+    x"91c2f8",
+    x"94c5fa",
+    x"96c8fc",
+    x"99ccff"
+);
+
 type ram_t is array(0 to FFT_DEPTH-1) of std_logic_vector(DATA_WIDTH-1 downto 0);
-signal bins_ram : ram_t := (others => (others => '0'));
+signal rgb_ram_0, rgb_ram_1 : ram_t := (others => (others => '0'));
 signal write_pointer : integer range 0 to FFT_DEPTH-1 := 0;
+signal ram_select : std_logic := '0';
+
 
 ----------------------------------------------------------------------------
 -- Component Declarations
@@ -55,40 +130,40 @@ begin
 ----------------------------------------------------------------------------
 -- Logic
 ----------------------------------------------------------------------------
-write_pointer_logic : process(s00_axis_aclk)
-begin
-    if rising_edge(s00_axis_aclk) then
-        if s00_axis_tlast = '1' then
-            write_pointer <= 0;
-        elsif s00_axis_tvalid = '1' then
-            write_pointer <= write_pointer + 1;
-        end if;
-    end if;
-end process write_pointer_logic;
-
-write_bin : process(s00_axis_aclk)
+write_logic : process(s00_axis_aclk)
+    variable re_comp, im_comp : unsigned(24 downto 0);
+    variable magnitude : unsigned(48 downto 0);
 begin
     if rising_edge(s00_axis_aclk) then
         if s00_axis_tvalid = '1' then
-            bins_ram(write_pointer) <= s00_axis_tdata(DATA_WIDTH-1 downto 0);
+            re_comp := unsigned(s00_axis_tdata(23 downto 0));
+            im_comp := unsigned(s00_axis_tdata(47 downto 0));
+            magnitude := ('0' & re_comp*re_comp) + ('0' & im_comp*im_comp);
+            if ram_select = '1' then
+                rgb_ram_1(to_integer(s00_axis_tuser)) <= RGB_LUT(to_integer(magnitude(48 downto 43)));
+            else
+                rgb_ram_0(to_integer(s00_axis_tuser)) <= RGB_LUT(to_integer(magnitude(48 downto 43)));
+            end if;
         end if;
     end if;
-end process write_bin;
+end process write_logic;
 
-bins_filled_logic : process(s00_axis_tlast)
-begin
-    ram_filled_o <= '0';
-    if s00_axis_tlast = '1' then
-        ram_filled_o <= '1';
-    end if;
-end process bins_filled_logic;
-
-get_bin_value : process(s00_axis_aclk)
+ram_select_logic : process(s00_axis_aclk)
 begin
     if rising_edge(s00_axis_aclk) then
-        bin_value_o <= bins_ram(to_integer(ram_index_i));
+        if vsync_i = '1' then
+            ram_select <= not ram_select;
+        end if;
     end if;
-end process get_bin_value;
+end process ram_select_logic;
+
+get_rgb_value : process(ram_select, ram_read_index_i)
+begin
+    rgb_value_o <= rgb_ram_0(to_integer(ram_read_index_i));
+    if ram_select = '1' then
+        rgb_value_o <= rgb_ram_1(to_integer(ram_read_index_i));
+    end if;
+end process get_rgb_value;
 
 
 end Behavioral;
