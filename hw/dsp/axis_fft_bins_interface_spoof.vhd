@@ -6,11 +6,6 @@
 ----------------------------------------------------------------------------
 --	Description: interface for Bins RAM from FFT
 ----------------------------------------------------------------------------
-
-package rgb_package is
-    constant RGB_WIDTH : integer := 24;
-end package rgb_package;
-
 -- Library Declarations
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -20,17 +15,17 @@ use work.rgb_package.all;
 
 ----------------------------------------------------------------------------
 -- Entity definition
-entity axis_fft_bins_interface is
+entity axis_fft_bins_interface_spoof is
     Generic (
         DATA_WIDTH : integer := 24;
         FFT_DEPTH : integer := 64);
     Port (
     -- Ports of Axi Responder Bus Interface S00_AXIS
-		s00_axis_aclk     : in std_logic;
-		s00_axis_tdata	  : in std_logic_vector(DATA_WIDTH*2-1 downto 0);
-		s00_axis_tlast    : in std_logic;
-		s00_axis_tuser    : in unsigned(5 downto 0);
-		s00_axis_tvalid   : in std_logic;
+--		s00_axis_aclk     : in std_logic;
+--		s00_axis_tdata	  : in std_logic_vector(DATA_WIDTH*2-1 downto 0);
+--		s00_axis_tlast    : in std_logic;
+--		s00_axis_tuser    : in unsigned(5 downto 0);
+--		s00_axis_tvalid   : in std_logic;
 
 		vsync_i           : in std_logic;
 
@@ -40,15 +35,14 @@ entity axis_fft_bins_interface is
 		dbg_magnitude_o   : out unsigned(DATA_WIDTH-1 downto 0)
 		);
 
-end axis_fft_bins_interface;
+end axis_fft_bins_interface_spoof;
 
 ----------------------------------------------------------------------------
 -- Architecture Definition
-architecture Behavioral of axis_fft_bins_interface is
+architecture Behavioral of axis_fft_bins_interface_spoof is
 ----------------------------------------------------------------------------
 -- Signals
 ----------------------------------------------------------------------------
--- First, declare the type
 type rgb_lut_array is array (0 to 63) of std_logic_vector(23 downto 0);
 
 -- Now declare the constant
@@ -119,7 +113,22 @@ constant RGB_LUT: rgb_lut_array := (
     x"99ccff"
 );
 
-type ram_t is array(0 to FFT_DEPTH-1) of std_logic_vector(DATA_WIDTH-1 downto 0);
+type index_arr is array(0 to 63) of integer;
+constant FFT_COLOR_INDEXES: index_arr := (
+    2,  3,  5,  7, 10, 13, 15, 16, -- low freq build-up
+   18, 20, 23, 25, 28, 30, 31, 30, -- mid-range peak
+   28, 25, 22, 20, 18, 16, 15, 13, -- falling off
+   11, 10,  9,  8,  7,  7,  6,  6, -- quiet zone
+    5,  5,  6,  7,  9, 12, 15, 18, -- mid-high swell
+   22, 25, 28, 31, 35, 38, 42, 45, -- high freq build-up
+   48, 50, 53, 56, 58, 60, 62, 63, -- high freq peak
+   60, 58, 56, 53, 50, 48, 45, 43  -- fading tail
+);
+
+type ram_t is array(0 to FFT_DEPTH-1) of std_logic_vector(RGB_WIDTH-1 downto 0);
+signal spoof_bins : ram_t;
+
+
 signal rgb_ram_0, rgb_ram_1 : ram_t := (others => (others => '0'));
 signal write_pointer : integer range 0 to FFT_DEPTH-1 := 0;
 signal ram_select : std_logic := '0';
@@ -131,79 +140,24 @@ signal magnitude_sig : unsigned(DATA_WIDTH-1 downto 0);
 -- Component Declarations
 ----------------------------------------------------------------------------
 ----------------------------------------------------------------------------
-
 begin
 ----------------------------------------------------------------------------
 -- Component Instantiations
 ----------------------------------------------------------------------------
 
+-- create the spoof fft readout
+process
+begin
+    for i in 0 to 63 loop
+        spoof_bins(i) <= RGB_LUT(FFT_COLOR_INDEXES(i));
+    end loop;
+end process;
 ----------------------------------------------------------------------------
 -- Logic
 ----------------------------------------------------------------------------
-write_logic : process(s00_axis_aclk)
+get_rgb_value : process(bin_read_index_i)
 begin
-    if rising_edge(s00_axis_aclk) then
-        if s00_axis_tvalid = '1' then
-            if ram_select = '1' then
-                rgb_ram_1(to_integer(s00_axis_tuser)) <= RGB_LUT(to_integer(magnitude_sig(DATA_WIDTH-1 downto DATA_WIDTH-7)));
-            else
-                rgb_ram_0(to_integer(s00_axis_tuser)) <= RGB_LUT(to_integer(magnitude_sig(DATA_WIDTH-1 downto DATA_WIDTH-7)));
-            end if;
-        end if;
-    end if;
-end process write_logic;
-
-ram_select_logic : process(s00_axis_aclk)
-begin
-    if rising_edge(s00_axis_aclk) then
-        if vsync_i = '1' then
-            ram_select <= not ram_select;
-        end if;
-    end if;
-end process ram_select_logic;
-
-get_rgb_value : process(ram_select, bin_read_index_i)
-begin
-    rgb_value_o <= rgb_ram_0(to_integer(bin_read_index_i));
-    if ram_select = '1' then
-        rgb_value_o <= rgb_ram_1(to_integer(bin_read_index_i));
-    end if;
+    rgb_value_o <= spoof_bins(to_integer(bin_read_index_i));
 end process get_rgb_value;
-
-magnitude_calc_proc: process(s00_axis_tdata)
-    variable re_signed : signed(23 downto 0);
-    variable im_signed : signed(23 downto 0);
-    variable re_abs : unsigned(23 downto 0);
-    variable im_abs : unsigned(23 downto 0);
-    variable magnitude_temp : unsigned(24 downto 0);
-begin
-            -- Extract real and imaginary parts (signed format)
-            re_signed := signed(s00_axis_tdata(23 downto 0));
-            im_signed := signed(s00_axis_tdata(47 downto 24));
-
-            -- Get absolute values for magnitude calculation
-            if re_signed >= 0 then
-                re_abs := unsigned(re_signed);
-            else
-                re_abs := unsigned(-re_signed);
-            end if;
-
-            if im_signed >= 0 then
-                im_abs := unsigned(im_signed);
-            else
-                im_abs := unsigned(-im_signed);
-            end if;
-
-            -- approximation for sqrt(re^2 + im^2)
-            if re_abs >= im_abs then
-                magnitude_temp := ('0' & re_abs) + ('0' & im_abs(23 downto 1)); -- re + im/2
-            else
-                magnitude_temp := ('0' & im_abs) + ('0' & re_abs(23 downto 1)); -- im + re/2
-            end if;
-
-            magnitude_sig <= magnitude_temp(23 downto 0);
-end process magnitude_calc_proc;
-
-dbg_magnitude_o <= magnitude_sig;
 
 end Behavioral;

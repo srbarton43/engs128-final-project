@@ -14,7 +14,7 @@ use ieee.math_real.all;
 
 ----------------------------------------------------------------------------
 -- Entity definition
-entity hdmi_test is
+entity hdmi_test_vertical_bars is
     Port (
         pixel_clk       : in std_logic;
         hsync_i         : in std_logic;
@@ -22,9 +22,9 @@ entity hdmi_test is
 
         rgb_o       : out std_logic_vector(23 downto 0)
     );
-end hdmi_test;
+end hdmi_test_vertical_bars;
 
-architecture Behavioral of hdmi_test is
+architecture Behavioral of hdmi_test_vertical_bars is
 
 type rgb_array_t is array (0 to 31) of std_logic_vector(23 downto 0);
 
