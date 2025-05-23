@@ -29,7 +29,9 @@ entity axis_fft_bins_interface is
 		vsync_i           : in std_logic;
 
 		ram_read_index_i  : in unsigned(5 downto 0);
-		rgb_value_o       : out std_logic_vector(DATA_WIDTH-1 downto 0)
+		rgb_value_o       : out std_logic_vector(DATA_WIDTH-1 downto 0);
+
+		dbg_magnitude_o   : out unsigned(DATA_WIDTH-1 downto 0)
 		);
 
 end axis_fft_bins_interface;
@@ -116,6 +118,8 @@ signal rgb_ram_0, rgb_ram_1 : ram_t := (others => (others => '0'));
 signal write_pointer : integer range 0 to FFT_DEPTH-1 := 0;
 signal ram_select : std_logic := '0';
 
+signal magnitude_sig : unsigned(DATA_WIDTH-1 downto 0);
+
 
 ----------------------------------------------------------------------------
 -- Component Declarations
@@ -131,18 +135,13 @@ begin
 -- Logic
 ----------------------------------------------------------------------------
 write_logic : process(s00_axis_aclk)
-    variable re_comp, im_comp : unsigned(24 downto 0);
-    variable magnitude : unsigned(48 downto 0);
 begin
     if rising_edge(s00_axis_aclk) then
         if s00_axis_tvalid = '1' then
-            re_comp := unsigned(s00_axis_tdata(23 downto 0));
-            im_comp := unsigned(s00_axis_tdata(47 downto 0));
-            magnitude := ('0' & re_comp*re_comp) + ('0' & im_comp*im_comp);
             if ram_select = '1' then
-                rgb_ram_1(to_integer(s00_axis_tuser)) <= RGB_LUT(to_integer(magnitude(48 downto 43)));
+                rgb_ram_1(to_integer(s00_axis_tuser)) <= RGB_LUT(to_integer(magnitude_sig(DATA_WIDTH-1 downto DATA_WIDTH-7)));
             else
-                rgb_ram_0(to_integer(s00_axis_tuser)) <= RGB_LUT(to_integer(magnitude(48 downto 43)));
+                rgb_ram_0(to_integer(s00_axis_tuser)) <= RGB_LUT(to_integer(magnitude_sig(DATA_WIDTH-1 downto DATA_WIDTH-7)));
             end if;
         end if;
     end if;
@@ -165,5 +164,40 @@ begin
     end if;
 end process get_rgb_value;
 
+magnitude_calc_proc: process(s00_axis_tdata)
+    variable re_signed : signed(23 downto 0);
+    variable im_signed : signed(23 downto 0);
+    variable re_abs : unsigned(23 downto 0);
+    variable im_abs : unsigned(23 downto 0);
+    variable magnitude_temp : unsigned(24 downto 0);
+begin
+            -- Extract real and imaginary parts (signed format)
+            re_signed := signed(s00_axis_tdata(23 downto 0));
+            im_signed := signed(s00_axis_tdata(47 downto 24));
+
+            -- Get absolute values for magnitude calculation
+            if re_signed >= 0 then
+                re_abs := unsigned(re_signed);
+            else
+                re_abs := unsigned(-re_signed);
+            end if;
+
+            if im_signed >= 0 then
+                im_abs := unsigned(im_signed);
+            else
+                im_abs := unsigned(-im_signed);
+            end if;
+
+            -- approximation for sqrt(re^2 + im^2)
+            if re_abs >= im_abs then
+                magnitude_temp := ('0' & re_abs) + ('0' & im_abs(23 downto 1)); -- re + im/2
+            else
+                magnitude_temp := ('0' & im_abs) + ('0' & re_abs(23 downto 1)); -- im + re/2
+            end if;
+
+            magnitude_sig <= magnitude_temp(23 downto 0);
+end process magnitude_calc_proc;
+
+dbg_magnitude_o <= magnitude_sig;
 
 end Behavioral;
