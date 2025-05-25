@@ -57,21 +57,20 @@ begin
     ----------------------------------------------------------------------------
     -- Processes and Logic
     ----------------------------------------------------------------------------
-
     read_counter_logic : process(clk_i)
-    begin
-        if rising_edge(clk_i) then
-            if reset_i = '1' then
-                read_pointer <= 0;
-            elsif rd_en_i = '1' and empty_sig = '0' then
-                if read_pointer = FIFO_DEPTH - 1 then
+        begin
+            if rising_edge(clk_i) then
+                if reset_i = '1' then
                     read_pointer <= 0;
-                else
-                    read_pointer <= read_pointer + 1;
+                elsif rd_en_i = '1' and empty_sig = '0' then
+                    if read_pointer = FIFO_DEPTH - 1 then
+                        read_pointer <= 0;
+                    else
+                        read_pointer <= read_pointer + 1;
+                    end if;
                 end if;
             end if;
-        end if;
-    end process read_counter_logic;
+        end process read_counter_logic;
 
     write_counter_logic : process(clk_i)
     begin
@@ -89,19 +88,23 @@ begin
     end process write_counter_logic;
 
     data_count_logic : process(clk_i)
-    begin
-        if rising_edge(clk_i) then
-            if reset_i = '1' then
-                data_count <= 0;
-            elsif wr_en_i = '0' or rd_en_i = '0' then
-                if wr_en_i = '1' and full_sig = '0' then
-                    data_count <= data_count + 1;
-                elsif rd_en_i = '1' and empty_sig = '0' then
-                    data_count <= data_count - 1;
+        begin
+            if rising_edge(clk_i) then
+                if reset_i = '1' then
+                    data_count <= 0;
+                elsif wr_en_i = '1' and rd_en_i = '1' then
+                    if empty_sig = '1' then
+                        data_count <= data_count + 1;
+                    end if;
+                else
+                    if wr_en_i = '1' and full_sig = '0' then
+                        data_count <= data_count + 1;
+                    elsif rd_en_i = '1' and empty_sig = '0' then
+                        data_count <= data_count - 1;
+                    end if;
                 end if;
             end if;
-        end if;
-    end process data_count_logic;
+        end process data_count_logic;
 
     full_logic : process(data_count)
     begin
@@ -115,10 +118,6 @@ begin
     begin
         empty_sig <= '0';
         if data_count = 0 then
-            empty_sig <= '1';
-        end if;
-
-        if data_count = 0 and read_and_write_sig = '1' then
             empty_sig <= '1';
         end if;
     end process empty_logic;
