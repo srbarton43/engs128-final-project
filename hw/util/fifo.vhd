@@ -1,10 +1,10 @@
-----------------------------------------------------------------------------
+
 --  Lab 2: AXI Stream FIFO and DMA
 ----------------------------------------------------------------------------
 --  ENGS 128 Spring 2025
---	Author: Kendall Farnham
+--	Author: Samuel Barton
 ----------------------------------------------------------------------------
---	Description: FIFO buffer with AXI stream valid signal
+--	Description: FIFO buffer
 ----------------------------------------------------------------------------
 -- Library Declarations
 library IEEE;
@@ -45,7 +45,8 @@ architecture Behavioral of fifo is
 
     -- counters
     signal read_pointer, write_pointer : integer range 0 to FIFO_DEPTH-1 := 0;
-    signal prev_data_count, data_count : integer range 0 to FIFO_DEPTH-1 := 0;
+    --signal prev_data_count, data_count : integer range 0 to FIFO_DEPTH-1 := 0;
+    signal data_count : integer range 0 to FIFO_DEPTH := 0;
 
     signal full_sig : std_logic := '0';
     signal empty_sig : std_logic := '0';
@@ -87,53 +88,33 @@ begin
         end if;
     end process write_counter_logic;
 
-    buffer_size : process(write_pointer, read_pointer)
-    begin
-        if read_pointer > write_pointer then
-            data_count <= write_pointer - read_pointer + FIFO_DEPTH;
-        else
-            data_count <= write_pointer - read_pointer;
-        end if;
-    end process buffer_size;
-
-    buffer_size_previous : process(clk_i)
+    data_count_logic : process(clk_i)
     begin
         if rising_edge(clk_i) then
             if reset_i = '1' then
-                prev_data_count <= 0;
-            else
-                prev_data_count <= data_count;
-            end if;
-        end if;
-    end process buffer_size_previous;
-
-    full_logic : process(data_count)
-    begin
-        full_sig <= '1';
-        if data_count < FIFO_DEPTH - 1 then
-            full_sig <= '0';
-        end if;
-    end process full_logic;
-
-    detect_read_and_write : process(clk_i)
-    begin
-        if rising_edge(clk_i) then
-            if reset_i = '1' then
-                read_and_write_sig <= '0';
-            else
-                read_and_write_sig <= '0';
-                if full_sig = '0' and wr_en_i = '1'
-                    and empty_sig = '0' and rd_en_i = '1' then
-                    read_and_write_sig <= '1';
+                data_count <= 0;
+            elsif wr_en_i = '0' or rd_en_i = '0' then
+                if wr_en_i = '1' and full_sig = '0' then
+                    data_count <= data_count + 1;
+                elsif rd_en_i = '1' and empty_sig = '0' then
+                    data_count <= data_count - 1;
                 end if;
             end if;
         end if;
-    end process detect_read_and_write;
+    end process data_count_logic;
 
-    empty_logic : process(data_count, prev_data_count, read_and_write_sig)
+    full_logic : process(data_count)
+    begin
+        full_sig <= '0';
+        if data_count = FIFO_DEPTH then
+            full_sig <= '1';
+        end if;
+    end process full_logic;
+
+    empty_logic : process(data_count, read_and_write_sig)
     begin
         empty_sig <= '0';
-        if data_count = 0 or prev_data_count = 0 then
+        if data_count = 0 then
             empty_sig <= '1';
         end if;
 
