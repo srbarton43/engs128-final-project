@@ -39,15 +39,15 @@ entity axis_i2s_wrapper is
         ac_dac_lrclk_o : out STD_LOGIC;
 
 
-        -- dds or line in??
-        dds_enable_i : in std_logic;
+        ---- dds or line in??
+        --dds_enable_i : in std_logic;
 
-        -- DDS audio in
-        dds_audio_left_i : in STD_LOGIC_VECTOR(I2S_DATA_WIDTH-1 downto 0);
-        dds_audio_right_i : in STD_LOGIC_VECTOR(I2S_DATA_WIDTH-1 downto 0);
+        ---- DDS audio in
+        --dds_audio_left_i : in STD_LOGIC_VECTOR(I2S_DATA_WIDTH-1 downto 0);
+        --dds_audio_right_i : in STD_LOGIC_VECTOR(I2S_DATA_WIDTH-1 downto 0);
 
-        -- dds clock
-        dds_clock_o : out STD_LOGIC;
+        ---- dds clock
+        --dds_clock_o : out STD_LOGIC;
 
         -- lrclk_o unbuffered
         lrclk_unbuf_o : out STD_LOGIC;
@@ -213,7 +213,7 @@ begin
 
             mclk_o => open,
             bclk_o => bclk_sig,
-            lrclk_o => dds_clock_o,
+            lrclk_o => open,
             lrclk_unbuf_o => lrclk_sig
         );
 
@@ -289,15 +289,18 @@ begin
 
     ac_mute_n_o <= mute_reg;
 
-    dds_logic : process(dds_enable_i)
-    begin
-        muxed_left_audio_rx_sig <= left_audio_rx_sig;
-        muxed_right_audio_rx_sig <= right_audio_rx_sig;
-        if dds_enable_i = '1' then
-            muxed_left_audio_rx_sig <= dds_audio_left_i;
-            muxed_right_audio_rx_sig <= dds_audio_right_i;
-        end if;
-    end process dds_logic;
+    --dds_logic : process(dds_enable_i)
+    --begin
+    --    muxed_left_audio_rx_sig <= left_audio_rx_sig;
+    --    muxed_right_audio_rx_sig <= right_audio_rx_sig;
+    --    if dds_enable_i = '1' then
+    --        muxed_left_audio_rx_sig <= dds_audio_left_i;
+    --        muxed_right_audio_rx_sig <= dds_audio_right_i;
+    --    end if;
+    --end process dds_logic;
+
+    muxed_left_audio_rx_sig <= left_audio_rx_sig;
+    muxed_right_audio_rx_sig <= right_audio_rx_sig;
 
     -- tie lrclk out
     lrclk_unbuf_o <= lrclk_sig;
