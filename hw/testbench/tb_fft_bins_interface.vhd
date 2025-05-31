@@ -151,6 +151,9 @@ begin
         bin_read_index_i <= (others => '0');
 
         wait for CLK_PERIOD * 5;
+        vsync_i <= '1';
+
+        wait for CLK_PERIOD * 5;
 
         -- Test 1: Write data to the first RAM with pattern 0
         for i in 0 to FFT_DEPTH-1 loop

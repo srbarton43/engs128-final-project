@@ -126,15 +126,18 @@ architecture Behavioral of axis_fft_bins_interface is
 ----------------------------------------------------------------------------
 -- Signals
 ----------------------------------------------------------------------------
-constant MAG_MSB_OFFSET : integer := 4; -- could change....was seeing that MAG(18) was the highest bit high
+constant MAG_MSB_OFFSET : integer := 3; -- could change....was seeing that MAG(21) was the highest bit high
 
 type ram_t is array(0 to FFT_DEPTH-1) of std_logic_vector(DATA_WIDTH-1 downto 0);
-signal rgb_ram_0, rgb_ram_1 : ram_t := (others => (others => '0'));
---signal write_pointer : integer range 0 to FFT_DEPTH-1 := 0;
+signal rgb_ram_0 : ram_t := (others => (others => '0'));
+
+type state_t is (WAIT_VSYNC_LOW, WAIT_VSYNC_HIGH, WAIT_VALID, WAIT_INVALID);
+signal next_state, cur_state : state_t := WAIT_VSYNC_HIGH;
+
+signal loading_signal : std_logic := '0';
 
 -- ram_select for RAM to write to
 -- read from the other RAM
-signal ram_select : std_logic := '0';
 
 -- pipeline the axi signals
 signal pipelined_tvalid_0, pipelined_tvalid_1 : std_logic := '0';
@@ -155,6 +158,44 @@ begin
 ----------------------------------------------------------------------------
 -- Logic
 ----------------------------------------------------------------------------
+
+next_state_logic : process(cur_state, vsync_i, s00_axis_tvalid, pipelined_tvalid_1)
+begin
+    next_state <= cur_state;
+    case cur_state is
+        when WAIT_VSYNC_HIGH =>
+            if vsync_i = '0' then
+                next_state <= WAIT_VSYNC_LOW;
+            end if;
+        when WAIT_VSYNC_LOW =>
+            if vsync_i = '1' then
+                next_state <= WAIT_VALID;
+            end if;
+        when WAIT_VALID =>
+            if s00_axis_tvalid = '1' then
+                next_state <= WAIT_INVALID;
+            end if;
+        when WAIT_INVALID =>
+            if pipelined_tvalid_1 = '0' and s00_axis_tvalid = '0' then
+                next_state <= WAIT_VSYNC_HIGH;
+            end if;
+    end case;
+end process next_state_logic;
+
+update_state : process(s00_axis_aclk)
+begin
+    if rising_edge(s00_axis_aclk) then
+        cur_state <= next_state;
+    end if;
+end process update_state;
+
+state_signal_logic : process(cur_state)
+begin
+    loading_signal <= '0';
+    if cur_state = WAIT_INVALID then
+        loading_signal <= '1';
+    end if;
+end process state_signal_logic;
 
 pipeline_logic : process(s00_axis_aclk)
 begin
@@ -177,31 +218,16 @@ begin
         rgb_write_val := RGB_LUT(to_integer(rgb_lut_index));
         dbg_rgb_lut_index <= rgb_lut_index;
         dbg_rgb_write_val <= rgb_write_val;
-        if pipelined_tvalid_1 = '1' then
-            if ram_select = '1' then
-                rgb_ram_1(to_integer(pipelined_tuser_1)) <= rgb_write_val;
-            else
-                rgb_ram_0(to_integer(pipelined_tuser_1)) <= rgb_write_val;
-            end if;
+        if pipelined_tvalid_1 = '1' and loading_signal = '1' then
+            rgb_ram_0(to_integer(pipelined_tuser_1)) <= rgb_write_val;
         end if;
     end if;
 end process write_logic;
 
-ram_select_logic : process(s00_axis_aclk)
-begin
-    if rising_edge(s00_axis_aclk) then
-        if vsync_i = '1' then
-            ram_select <= not ram_select;
-        end if;
-    end if;
-end process ram_select_logic;
 
-get_rgb_value : process(ram_select, bin_read_index_i, rgb_ram_0, rgb_ram_1)
+get_rgb_value : process(bin_read_index_i, rgb_ram_0)
 begin
-    rgb_value_o <= rgb_ram_1(to_integer(bin_read_index_i(BIN_INDEX_DEPTH-1 downto 0)));
-    if ram_select = '1' then
-        rgb_value_o <= rgb_ram_0(to_integer(bin_read_index_i(BIN_INDEX_DEPTH-1 downto 0)));
-    end if;
+    rgb_value_o <= rgb_ram_0(to_integer(bin_read_index_i(BIN_INDEX_DEPTH-1 downto 0)));
 end process get_rgb_value;
 
 magnitude_calc_proc: process(s00_axis_aclk)
