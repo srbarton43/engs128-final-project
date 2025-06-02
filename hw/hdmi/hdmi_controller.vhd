@@ -18,7 +18,7 @@ use work.rgb_package.all;
 -- Entity definition
 entity hdmi_controller is
     Generic (
-        NUMBER_BINS : integer := 64;
+        FFT_DEPTH : integer := 64;
         BIN_INDEX_WIDTH : integer := 6
     );
     Port (
@@ -32,17 +32,18 @@ end hdmi_controller;
 
 architecture Behavioral of hdmi_controller is
     constant TOTAL_PIXEL_WIDTH : integer := 1280;
+    constant NUMBER_BINS : integer := FFT_DEPTH / 2;
     constant BIN_PIXEL_WIDTH : integer := TOTAL_PIXEL_WIDTH / NUMBER_BINS;
 
-    signal pixel_counter : integer range 0 to BIN_PIXEL_WIDTH := 0;
+    signal pixel_counter : integer range 0 to BIN_PIXEL_WIDTH-1 := 0;
     signal pixel_counter_tc : std_logic := '0';
-    signal bin_counter : integer range 0 to NUMBER_BINS := 0;
+    signal bin_counter : integer range 0 to NUMBER_BINS-1 := 0;
 begin
 
     bin_counter_logic : process(pixel_clk_i)
     begin
         if rising_edge(pixel_clk_i) then
-            if hsync_i = '1' or bin_counter = NUMBER_BINS-1 then
+            if hsync_i = '1' then
                 bin_counter <= 0;
             elsif pixel_counter_tc = '1' then
                 bin_counter <= bin_counter + 1;

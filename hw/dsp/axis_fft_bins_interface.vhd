@@ -227,7 +227,7 @@ end process write_logic;
 
 get_rgb_value : process(bin_read_index_i, rgb_ram_0)
 begin
-    rgb_value_o <= rgb_ram_0(to_integer(bin_read_index_i(BIN_INDEX_DEPTH-1 downto 0)));
+    rgb_value_o <= rgb_ram_0(to_integer(bin_read_index_i));
 end process get_rgb_value;
 
 magnitude_calc_proc: process(s00_axis_aclk)
