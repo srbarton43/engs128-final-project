@@ -14,76 +14,43 @@ use ieee.math_real.all;
 package rgb_package is
     constant RGB_WIDTH : integer := 24;
 
-    type rgb_lut_array is array (0 to 63) of std_logic_vector(RGB_WIDTH-1 downto 0);
-
-    -- Now declare the constant
-    constant RGB_LUT: rgb_lut_array := (
-        x"00007f",
-        x"020381",
-        x"040683",
-        x"070985",
-        x"090c87",
-        x"0c1089",
-        x"0e138b",
-        x"11168d",
-        x"13198f",
-        x"151d91",
-        x"182093",
-        x"1a2395",
-        x"1d2697",
-        x"1f2a99",
-        x"222d9b",
-        x"24309d",
-        x"26339f",
-        x"2937a1",
-        x"2b3aa3",
-        x"2e3da5",
-        x"3040a7",
-        x"3244aa",
-        x"3547ac",
-        x"374aae",
-        x"3a4db0",
-        x"3c50b2",
-        x"3f54b4",
-        x"4157b6",
-        x"445ab8",
-        x"465dba",
-        x"4861bc",
-        x"4b64be",
-        x"4d67c0",
-        x"506ac2",
-        x"526ec4",
-        x"5571c6",
-        x"5774c8",
-        x"5977ca",
-        x"5c7bcc",
-        x"5e7ece",
-        x"6181d0",
-        x"6384d2",
-        x"6588d4",
-        x"688bd6",
-        x"6a8ed8",
-        x"6d91da",
-        x"6f94dc",
-        x"7298de",
-        x"749be0",
-        x"769ee2",
-        x"79a1e4",
-        x"7ba5e6",
-        x"7ea8e8",
-        x"80abea",
-        x"83aeec",
-        x"85b2ee",
-        x"88b5f0",
-        x"8ab8f2",
-        x"8cbbf4",
-        x"8fbff6",
-        x"91c2f8",
-        x"94c5fa",
-        x"96c8fc",
-        x"99ccff"
+    type rgb_lut_array is array (0 to 255) of std_logic_vector(RGB_WIDTH-1 downto 0);
+    constant RGB_LUT : rgb_lut_array := (
+        X"000000", X"010101", X"020202", X"030303", X"040404", X"050505", X"060606", X"070707",
+        X"080808", X"090909", X"0A0A0A", X"0B0B0B", X"0C0C0C", X"0D0D0D", X"0E0E0E", X"0F0F0F",
+        X"101010", X"111111", X"121212", X"131313", X"141414", X"151515", X"161616", X"171717",
+        X"181818", X"191919", X"1A1A1A", X"1B1B1B", X"1C1C1C", X"1D1D1D", X"1E1E1E", X"1F1F1F",
+        X"202020", X"202020", X"222222", X"232323", X"242424", X"242424", X"262626", X"272727",
+        X"282828", X"282828", X"2A2A2A", X"2B2B2B", X"2C2C2C", X"2C2C2C", X"2E2E2E", X"2F2F2F",
+        X"303030", X"303030", X"323232", X"333333", X"343434", X"343434", X"363636", X"373737",
+        X"383838", X"383838", X"3A3A3A", X"3B3B3B", X"3C3C3C", X"3C3C3C", X"3E3E3E", X"3F3F3F",
+        X"404040", X"414141", X"414141", X"434343", X"444444", X"454545", X"464646", X"474747",
+        X"484848", X"494949", X"494949", X"4B4B4B", X"4C4C4C", X"4D4D4D", X"4E4E4E", X"4F4F4F",
+        X"505050", X"515151", X"515151", X"535353", X"545454", X"555555", X"565656", X"575757",
+        X"585858", X"595959", X"595959", X"5B5B5B", X"5C5C5C", X"5D5D5D", X"5E5E5E", X"5F5F5F",
+        X"606060", X"616161", X"616161", X"636363", X"646464", X"656565", X"666666", X"676767",
+        X"686868", X"696969", X"696969", X"6B6B6B", X"6C6C6C", X"6D6D6D", X"6E6E6E", X"6F6F6F",
+        X"707070", X"717171", X"717171", X"737373", X"747474", X"757575", X"767676", X"777777",
+        X"787878", X"797979", X"797979", X"7B7B7B", X"7C7C7C", X"7D7D7D", X"7E7E7E", X"7F7F7F",
+        X"808080", X"818181", X"828282", X"838383", X"838383", X"858585", X"868686", X"878787",
+        X"888888", X"898989", X"8A8A8A", X"8B8B8B", X"8C8C8C", X"8D8D8D", X"8E8E8E", X"8F8F8F",
+        X"909090", X"919191", X"929292", X"939393", X"939393", X"959595", X"969696", X"979797",
+        X"989898", X"999999", X"9A9A9A", X"9B9B9B", X"9C9C9C", X"9D9D9D", X"9E9E9E", X"9F9F9F",
+        X"A0A0A0", X"A1A1A1", X"A2A2A2", X"A3A3A3", X"A3A3A3", X"A5A5A5", X"A6A6A6", X"A7A7A7",
+        X"A8A8A8", X"A9A9A9", X"AAAAAA", X"ABABAB", X"ACACAC", X"ADADAD", X"AEAEAE", X"AFAFAF",
+        X"B0B0B0", X"B1B1B1", X"B2B2B2", X"B3B3B3", X"B3B3B3", X"B5B5B5", X"B6B6B6", X"B7B7B7",
+        X"B8B8B8", X"B9B9B9", X"BABABA", X"BBBBBB", X"BCBCBC", X"BDBDBD", X"BEBEBE", X"BFBFBF",
+        X"C0C0C0", X"C1C1C1", X"C2C2C2", X"C3C3C3", X"C3C3C3", X"C5C5C5", X"C6C6C6", X"C7C7C7",
+        X"C8C8C8", X"C9C9C9", X"CACACA", X"CBCBCB", X"CCCCCC", X"CDCDCD", X"CECECE", X"CFCFCF",
+        X"D0D0D0", X"D1D1D1", X"D2D2D2", X"D3D3D3", X"D3D3D3", X"D5D5D5", X"D6D6D6", X"D7D7D7",
+        X"D8D8D8", X"D9D9D9", X"DADADA", X"DBDBDB", X"DCDCDC", X"DDDDDD", X"DEDEDE", X"DFDFDF",
+        X"E0E0E0", X"E1E1E1", X"E2E2E2", X"E3E3E3", X"E3E3E3", X"E5E5E5", X"E6E6E6", X"E7E7E7",
+        X"E8E8E8", X"E9E9E9", X"EAEAEA", X"EBEBEB", X"ECECEC", X"EDEDED", X"EEEEEE", X"EFEFEF",
+        X"F0F0F0", X"F1F1F1", X"F2F2F2", X"F3F3F3", X"F3F3F3", X"F5F5F5", X"F6F6F6", X"F7F7F7",
+        X"F8F8F8", X"F9F9F9", X"FAFAFA", X"FBFBFB", X"FCFCFC", X"FDFDFD", X"FEFEFE", X"FFFFFF"
     );
-end package rgb_package;
+    -- Now declare the constant
+    end package rgb_package;
 
 -- Library Declarations
 library IEEE;
@@ -98,6 +65,7 @@ entity axis_fft_bins_interface is
     Generic (
         DATA_WIDTH : integer := 24;
         FFT_DEPTH : integer := 64;
+        RGB_LUT_INDEX_WIDTH : integer := 8;
         BIN_INDEX_DEPTH : integer := 6);
     Port (
     -- Ports of Axi Responder Bus Interface S00_AXIS
@@ -114,7 +82,7 @@ entity axis_fft_bins_interface is
 
 		dbg_tuser_o       : out unsigned(BIN_INDEX_DEPTH-1 downto 0);
 		dbg_magnitude_o   : out unsigned(DATA_WIDTH-1 downto 0);
-		dbg_rgb_lut_index : out unsigned(BIN_INDEX_DEPTH-1 downto 0);
+		dbg_rgb_lut_index : out unsigned(RGB_LUT_INDEX_WIDTH-1 downto 0);
 		dbg_rgb_write_val : out std_logic_vector(RGB_WIDTH-1 downto 0)
 		);
 
@@ -126,15 +94,18 @@ architecture Behavioral of axis_fft_bins_interface is
 ----------------------------------------------------------------------------
 -- Signals
 ----------------------------------------------------------------------------
-constant MAG_MSB_OFFSET : integer := 4; -- could change....was seeing that MAG(18) was the highest bit high
+constant MAG_MSB_OFFSET : integer := 1; -- could change....was seeing that MAG(22) was the highest bit high
 
 type ram_t is array(0 to FFT_DEPTH-1) of std_logic_vector(DATA_WIDTH-1 downto 0);
-signal rgb_ram_0, rgb_ram_1 : ram_t := (others => (others => '0'));
---signal write_pointer : integer range 0 to FFT_DEPTH-1 := 0;
+signal rgb_ram_0 : ram_t := (others => (others => '0'));
+
+type state_t is (WAIT_VSYNC_LOW, WAIT_VSYNC_HIGH, WAIT_VALID, WAIT_INVALID);
+signal next_state, cur_state : state_t := WAIT_VSYNC_HIGH;
+
+signal loading_signal : std_logic := '0';
 
 -- ram_select for RAM to write to
 -- read from the other RAM
-signal ram_select : std_logic := '0';
 
 -- pipeline the axi signals
 signal pipelined_tvalid_0, pipelined_tvalid_1 : std_logic := '0';
@@ -156,6 +127,44 @@ begin
 -- Logic
 ----------------------------------------------------------------------------
 
+next_state_logic : process(cur_state, vsync_i, s00_axis_tvalid, pipelined_tvalid_1)
+begin
+    next_state <= cur_state;
+    case cur_state is
+        when WAIT_VSYNC_HIGH =>
+            if vsync_i = '0' then
+                next_state <= WAIT_VSYNC_LOW;
+            end if;
+        when WAIT_VSYNC_LOW =>
+            if vsync_i = '1' then
+                next_state <= WAIT_VALID;
+            end if;
+        when WAIT_VALID =>
+            if s00_axis_tvalid = '1' then
+                next_state <= WAIT_INVALID;
+            end if;
+        when WAIT_INVALID =>
+            if pipelined_tvalid_1 = '0' and s00_axis_tvalid = '0' then
+                next_state <= WAIT_VSYNC_HIGH;
+            end if;
+    end case;
+end process next_state_logic;
+
+update_state : process(s00_axis_aclk)
+begin
+    if rising_edge(s00_axis_aclk) then
+        cur_state <= next_state;
+    end if;
+end process update_state;
+
+state_signal_logic : process(cur_state)
+begin
+    loading_signal <= '0';
+    if cur_state = WAIT_INVALID then
+        loading_signal <= '1';
+    end if;
+end process state_signal_logic;
+
 pipeline_logic : process(s00_axis_aclk)
 begin
     if rising_edge(s00_axis_aclk) then
@@ -170,38 +179,23 @@ end process pipeline_logic;
 
 write_logic : process(s00_axis_aclk)
     variable rgb_write_val : std_logic_vector(RGB_WIDTH-1 downto 0);
-    variable rgb_lut_index : unsigned(BIN_INDEX_DEPTH-1 downto 0);
+    variable rgb_lut_index : unsigned(RGB_LUT_INDEX_WIDTH-1 downto 0);
 begin
     if rising_edge(s00_axis_aclk) then
-        rgb_lut_index := pipelined_magnitude(DATA_WIDTH-MAG_MSB_OFFSET downto DATA_WIDTH-MAG_MSB_OFFSET-BIN_INDEX_DEPTH+1);
+        rgb_lut_index := pipelined_magnitude(DATA_WIDTH-MAG_MSB_OFFSET-1 downto DATA_WIDTH-MAG_MSB_OFFSET-RGB_LUT_INDEX_WIDTH);
         rgb_write_val := RGB_LUT(to_integer(rgb_lut_index));
         dbg_rgb_lut_index <= rgb_lut_index;
         dbg_rgb_write_val <= rgb_write_val;
-        if pipelined_tvalid_1 = '1' then
-            if ram_select = '1' then
-                rgb_ram_1(to_integer(pipelined_tuser_1)) <= rgb_write_val;
-            else
-                rgb_ram_0(to_integer(pipelined_tuser_1)) <= rgb_write_val;
-            end if;
+        if pipelined_tvalid_1 = '1' and loading_signal = '1' then
+            rgb_ram_0(to_integer(pipelined_tuser_1)) <= rgb_write_val;
         end if;
     end if;
 end process write_logic;
 
-ram_select_logic : process(s00_axis_aclk)
-begin
-    if rising_edge(s00_axis_aclk) then
-        if vsync_i = '1' then
-            ram_select <= not ram_select;
-        end if;
-    end if;
-end process ram_select_logic;
 
-get_rgb_value : process(ram_select, bin_read_index_i, rgb_ram_0, rgb_ram_1)
+get_rgb_value : process(bin_read_index_i, rgb_ram_0)
 begin
-    rgb_value_o <= rgb_ram_1(to_integer(bin_read_index_i(BIN_INDEX_DEPTH-1 downto 0)));
-    if ram_select = '1' then
-        rgb_value_o <= rgb_ram_0(to_integer(bin_read_index_i(BIN_INDEX_DEPTH-1 downto 0)));
-    end if;
+    rgb_value_o <= rgb_ram_0(to_integer(bin_read_index_i));
 end process get_rgb_value;
 
 magnitude_calc_proc: process(s00_axis_aclk)
