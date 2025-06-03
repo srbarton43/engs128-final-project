@@ -49,6 +49,56 @@ package rgb_package is
         X"F0F0F0", X"F1F1F1", X"F2F2F2", X"F3F3F3", X"F3F3F3", X"F5F5F5", X"F6F6F6", X"F7F7F7",
         X"F8F8F8", X"F9F9F9", X"FAFAFA", X"FBFBFB", X"FCFCFC", X"FDFDFD", X"FEFEFE", X"FFFFFF"
     );
+    
+    constant COLORFUL_RGB_LUT : rgb_lut_array := (
+    -- Red to Orange (0-42)
+    X"FF0000", X"FF0600", X"FF0C00", X"FF1200", X"FF1800", X"FF1E00", X"FF2400", X"FF2A00",
+    X"FF3000", X"FF3600", X"FF3C00", X"FF4200", X"FF4800", X"FF4E00", X"FF5400", X"FF5A00",
+    X"FF6000", X"FF6600", X"FF6C00", X"FF7200", X"FF7800", X"FF7E00", X"FF8400", X"FF8A00",
+    X"FF9000", X"FF9600", X"FF9C00", X"FFA200", X"FFA800", X"FFAE00", X"FFB400", X"FFBA00",
+    X"FFC000", X"FFC600", X"FFCC00", X"FFD200", X"FFD800", X"FFDE00", X"FFE400", X"FFEA00",
+    X"FFF000", X"FFF600", X"FFFC00",
+    
+    -- Orange to Yellow (43-85)
+    X"FFFF00", X"FCFF00", X"F9FF00", X"F6FF00", X"F3FF00", X"F0FF00", X"EDFF00", X"EAFF00",
+    X"E7FF00", X"E4FF00", X"E1FF00", X"DEFF00", X"DBFF00", X"D8FF00", X"D5FF00", X"D2FF00",
+    X"CFFF00", X"CCFF00", X"C9FF00", X"C6FF00", X"C3FF00", X"C0FF00", X"BDFF00", X"BAFF00",
+    X"B7FF00", X"B4FF00", X"B1FF00", X"AEFF00", X"ABFF00", X"A8FF00", X"A5FF00", X"A2FF00",
+    X"9FFF00", X"9CFF00", X"99FF00", X"96FF00", X"93FF00", X"90FF00", X"8DFF00", X"8AFF00",
+    X"87FF00", X"84FF00", X"81FF00",
+    
+    -- Yellow to Green (86-128)
+    X"7EFF00", X"7BFF00", X"78FF00", X"75FF00", X"72FF00", X"6FFF00", X"6CFF00", X"69FF00",
+    X"66FF00", X"63FF00", X"60FF00", X"5DFF00", X"5AFF00", X"57FF00", X"54FF00", X"51FF00",
+    X"4EFF00", X"4BFF00", X"48FF00", X"45FF00", X"42FF00", X"3FFF00", X"3CFF00", X"39FF00",
+    X"36FF00", X"33FF00", X"30FF00", X"2DFF00", X"2AFF00", X"27FF00", X"24FF00", X"21FF00",
+    X"1EFF00", X"1BFF00", X"18FF00", X"15FF00", X"12FF00", X"0FFF00", X"0CFF00", X"09FF00",
+    X"06FF00", X"03FF00", X"00FF00",
+    
+    -- Green to Cyan (129-171)
+    X"00FF03", X"00FF06", X"00FF09", X"00FF0C", X"00FF0F", X"00FF12", X"00FF15", X"00FF18",
+    X"00FF1B", X"00FF1E", X"00FF21", X"00FF24", X"00FF27", X"00FF2A", X"00FF2D", X"00FF30",
+    X"00FF33", X"00FF36", X"00FF39", X"00FF3C", X"00FF3F", X"00FF42", X"00FF45", X"00FF48",
+    X"00FF4B", X"00FF4E", X"00FF51", X"00FF54", X"00FF57", X"00FF5A", X"00FF5D", X"00FF60",
+    X"00FF63", X"00FF66", X"00FF69", X"00FF6C", X"00FF6F", X"00FF72", X"00FF75", X"00FF78",
+    X"00FF7B", X"00FF7E", X"00FF81",
+    
+    -- Cyan to Blue (172-214)
+    X"00FF84", X"00FF87", X"00FF8A", X"00FF8D", X"00FF90", X"00FF93", X"00FF96", X"00FF99",
+    X"00FF9C", X"00FF9F", X"00FFA2", X"00FFA5", X"00FFA8", X"00FFAB", X"00FFAE", X"00FFB1",
+    X"00FFB4", X"00FFB7", X"00FFBA", X"00FFBD", X"00FFC0", X"00FFC3", X"00FFC6", X"00FFC9",
+    X"00FFCC", X"00FFCF", X"00FFD2", X"00FFD5", X"00FFD8", X"00FFDB", X"00FFDE", X"00FFE1",
+    X"00FFE4", X"00FFE7", X"00FFEA", X"00FFED", X"00FFF0", X"00FFF3", X"00FFF6", X"00FFF9",
+    X"00FFFC", X"00FFFF", X"00FCFF",
+    
+    -- Blue to Magenta (215-255)
+    X"00F9FF", X"00F6FF", X"00F3FF", X"00F0FF", X"00EDFF", X"00EAFF", X"00E7FF", X"00E4FF",
+    X"00E1FF", X"00DEFF", X"00DBFF", X"00D8FF", X"00D5FF", X"00D2FF", X"00CFFF", X"00CCFF",
+    X"00C9FF", X"00C6FF", X"00C3FF", X"00C0FF", X"00BDFF", X"00BAFF", X"00B7FF", X"00B4FF",
+    X"00B1FF", X"00AEFF", X"00ABFF", X"00A8FF", X"00A5FF", X"00A2FF", X"009FFF", X"009CFF",
+    X"0099FF", X"0096FF", X"0093FF", X"0090FF", X"008DFF", X"008AFF", X"0087FF", X"0084FF",
+    X"0081FF"
+);
     -- Now declare the constant
     end package rgb_package;
 
@@ -74,6 +124,8 @@ entity axis_fft_bins_interface is
 		s00_axis_tlast    : in std_logic;
 		s00_axis_tuser    : in unsigned(BIN_INDEX_DEPTH-1 downto 0);
 		s00_axis_tvalid   : in std_logic;
+		
+		color_select_i    : in std_logic;
 
 		vsync_i           : in std_logic;
 
@@ -94,7 +146,7 @@ architecture Behavioral of axis_fft_bins_interface is
 ----------------------------------------------------------------------------
 -- Signals
 ----------------------------------------------------------------------------
-constant MAG_MSB_OFFSET : integer := 1; -- could change....was seeing that MAG(22) was the highest bit high
+constant MAG_MSB_OFFSET : integer := 5; -- could change....was seeing that MAG(22) was the highest bit high
 
 type ram_t is array(0 to FFT_DEPTH-1) of std_logic_vector(DATA_WIDTH-1 downto 0);
 signal rgb_ram_0 : ram_t := (others => (others => '0'));
@@ -183,7 +235,11 @@ write_logic : process(s00_axis_aclk)
 begin
     if rising_edge(s00_axis_aclk) then
         rgb_lut_index := pipelined_magnitude(DATA_WIDTH-MAG_MSB_OFFSET-1 downto DATA_WIDTH-MAG_MSB_OFFSET-RGB_LUT_INDEX_WIDTH);
-        rgb_write_val := RGB_LUT(to_integer(rgb_lut_index));
+        if color_select_i = '0' then
+            rgb_write_val := RGB_LUT(to_integer(rgb_lut_index));
+        else
+            rgb_write_val := COLORFUL_RGB_LUT(to_integer(rgb_lut_index));
+        end if;
         dbg_rgb_lut_index <= rgb_lut_index;
         dbg_rgb_write_val <= rgb_write_val;
         if pipelined_tvalid_1 = '1' and loading_signal = '1' then
